@@ -32,6 +32,26 @@ export const onRequest = createAuthSequence(
 
 Autentiseringen kjøres alltid først mot `/oauth2/login`. Appens mellomvare kjøres kun etter et gyldig token.
 
+Som standard brukes gjeldende URL som `redirect`-parameter etter innlogging. Du kan overstyre dette med `redirectUri`:
+
+```ts
+// Statisk URI — brukeren sendes alltid hit etter innlogging
+export const onRequest = createAuthSequence(
+    { redirectUri: 'https://www.nav.no/minside' },
+    async (context, next) => {
+        return next()
+    },
+)
+
+// Dynamisk URI — avhengig av forespørselen
+export const onRequest = createAuthSequence(
+    { redirectUri: (context) => context.url.origin },
+    async (context, next) => {
+        return next()
+    },
+)
+```
+
 Du kan sende inn flere mellomvare-handlers:
 
 ```ts
@@ -52,14 +72,6 @@ export const onRequest = sequence(
         return next()
     },
 )
-```
-
-`redirectUri` kan også være en funksjon som mottar Astro-konteksten:
-
-```ts
-export const onRequest = createAuthSequence({
-    redirectUri: (context) => context.url.origin,
-})
 ```
 
 ### Steg 2: Bruk token i komponenter og endepunkter
@@ -87,8 +99,8 @@ export function GET({ locals }: APIContext) {
 | --- | --- |
 | `NODE_ENV === 'development'` | Hopper over autentisering (lokal utvikling) |
 | URL inneholder `/internal` | Hopper over autentisering (interne Nais-endepunkter) |
-| Manglende token | Omdirigerer til `loginPath?redirect=<redirectUri>` |
-| Ugyldig token | Omdirigerer til `loginPath?redirect=<redirectUri>` |
+| Manglende token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
+| Ugyldig token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
 | Gyldig token | Setter `locals.token` og `locals.isSubstantial`, fortsetter |
 
 ## API
