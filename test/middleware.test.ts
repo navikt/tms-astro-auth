@@ -131,13 +131,20 @@ describe('createAuthSequence', () => {
         vi.mocked(getToken).mockReturnValue('valid-token')
         vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-substantial' } })
 
-        const appMiddleware = vi.fn((_ctx: unknown, next: () => Promise<Response>) => next())
+        let tokenSeenByApp: unknown
+        let isSubstantialSeenByApp: unknown
+        const appMiddleware = vi.fn((ctx: typeof context, next: () => Promise<Response>) => {
+            tokenSeenByApp = ctx.locals.token
+            isSubstantialSeenByApp = ctx.locals.isSubstantial
+            return next()
+        })
         const handler = createAuthSequence({}, appMiddleware as any)
         const context = createMockContext()
 
         await handler(context as any, next)
 
-        expect(context.locals.token).toBe('valid-token')
+        expect(tokenSeenByApp).toBe('valid-token')
+        expect(isSubstantialSeenByApp).toBe(true)
         expect(appMiddleware).toHaveBeenCalled()
         expect(next).toHaveBeenCalled()
     })
