@@ -7,10 +7,18 @@ vi.mock('@navikt/oasis', () => ({
 
 vi.mock('astro/middleware', () => ({
     defineMiddleware: (fn: unknown) => fn,
+    sequence:
+        (...handlers: ((ctx: unknown, next: () => Promise<Response>) => Promise<Response>)[]) =>
+        (context: unknown, outerNext: () => Promise<Response>) => {
+            const run = (index: number): Promise<Response> =>
+                index >= handlers.length ? outerNext() : handlers[index](context, () => run(index + 1))
+            return run(0)
+        },
 }))
 
 import { getToken, validateToken } from '@navikt/oasis'
 import { createAuthMiddleware } from '../package/middleware'
+import { createAuthSequence } from '../package/index'
 
 function createMockContext(url = 'https://app.nav.no/page') {
     const parsedUrl = new URL(url)
@@ -115,5 +123,43 @@ describe('createAuthMiddleware', () => {
         expect(context.redirect).toHaveBeenCalledWith(
             `/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no/page?foo=bar')}`,
         )
+    })
+})
+
+describe('createAuthSequence', () => {
+    beforeEach(() => {
+        vi.resetAllMocks()
+    })
+
+    afterEach(() => {
+        delete process.env.NODE_ENV
+    })
+
+    it('runs auth then the provided middleware on a valid token', async () => {
+        vi.mocked(getToken).mockReturnValue('valid-token')
+        vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-substantial' } })
+
+        const appMiddleware = vi.fn((_ctx: unknown, next: () => Promise<Response>) => next())
+        const handler = createAuthSequence({}, appMiddleware as any)
+        const context = createMockContext()
+
+        await handler(context as any, next)
+
+        expect(context.locals.token).toBe('valid-token')
+        expect(appMiddleware).toHaveBeenCalled()
+        expect(next).toHaveBeenCalled()
+    })
+
+    it('stops at auth and does not run app middleware when token is missing', async () => {
+        vi.mocked(getToken).mockReturnValue(null)
+
+        const appMiddleware = vi.fn()
+        const handler = createAuthSequence({}, appMiddleware as any)
+        const context = createMockContext()
+
+        await handler(context as any, next)
+
+        expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login'))
+        expect(appMiddleware).not.toHaveBeenCalled()
     })
 })

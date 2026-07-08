@@ -14,29 +14,50 @@ pnpm i @navikt/astro-auth
 
 ## Bruk
 
-### Steg 1: Registrer mellomvaren
+### Steg 1: Registrer mellomvaresekvensen
 
-Opprett `src/middleware.ts` i Astro-prosjektet ditt:
+Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `createAuthSequence` for å kombinere autentisering med appens egen mellomvarelogikk:
 
 ```ts
-import { createAuthMiddleware } from '@navikt/astro-auth'
+import { createAuthSequence } from '@navikt/astro-auth'
 
-export const onRequest = createAuthMiddleware()
+export const onRequest = createAuthSequence(
+    { loginPath: '/oauth2/login' },
+    async (context, next) => {
+        // din applikasjonsspesifikke mellomvarelogikk her
+        return next()
+    },
+)
 ```
 
-Som standard brukes `/oauth2/login` som innloggingssti og gjeldende URL som redirect-parameter. Begge kan konfigureres:
+Autentiseringen kjøres alltid først. Appens mellomvare kjøres kun etter et gyldig token.
+
+Du kan sende inn flere mellomvare-handlers:
 
 ```ts
-export const onRequest = createAuthMiddleware({
-    loginPath: '/minside/oauth2/login',
-    redirectUri: 'https://www.nav.no/minside',
-})
+export const onRequest = createAuthSequence({}, middlewareA, middlewareB)
+```
+
+#### Manuell komposisjon med `sequence`
+
+Trenger du full kontroll, kan du bruke `sequence` og `createAuthMiddleware` direkte:
+
+```ts
+import { createAuthMiddleware, sequence } from '@navikt/astro-auth'
+
+export const onRequest = sequence(
+    createAuthMiddleware({ loginPath: '/minside/oauth2/login' }),
+    async (context, next) => {
+        // app-spesifikk logikk
+        return next()
+    },
+)
 ```
 
 `redirectUri` kan også være en funksjon som mottar Astro-konteksten:
 
 ```ts
-export const onRequest = createAuthMiddleware({
+export const onRequest = createAuthSequence({
     redirectUri: (context) => context.url.origin,
 })
 ```
@@ -72,12 +93,29 @@ export function GET({ locals }: APIContext) {
 
 ## API
 
+### `createAuthSequence(options, ...middlewares)`
+
+Lager en Astro-mellomvaresekvens der auth kjøres først, etterfulgt av appens egne handlers.
+
+| Parameter | Type | Beskrivelse |
+| --- | --- | --- |
+| `options` | `AuthMiddlewareOptions` | Auth-konfigurasjonen (se under). |
+| `...middlewares` | `MiddlewareHandler[]` | Valgfrie ekstra mellomvare-handlers som kjøres etter autentisering. |
+
 ### `createAuthMiddleware(options?)`
+
+Returnerer en enkelt `MiddlewareHandler` for bruk med Astros `sequence()`.
+
+### `AuthMiddlewareOptions`
 
 | Opsjon | Type | Standard | Beskrivelse |
 | --- | --- | --- | --- |
 | `loginPath` | `string` | `'/oauth2/login'` | Stien til OAuth2-innloggingsendepunktet (Wonderwall). |
 | `redirectUri` | `string \| (context) => string` | Gjeldende forespørsels-URL | URI som sendes som `redirect`-parameter etter innlogging. |
+
+### `sequence`
+
+Re-eksportert fra `astro/middleware` for bekvemmelighet.
 
 ### `App.Locals`
 
