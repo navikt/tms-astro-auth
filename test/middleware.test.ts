@@ -54,7 +54,7 @@ describe('createAuthMiddleware', () => {
         expect(next).toHaveBeenCalled()
     })
 
-    it('redirects to default login path when no token', async () => {
+    it('redirects to /oauth2/login when no token', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext()
         const middleware = createAuthMiddleware()
@@ -62,7 +62,7 @@ describe('createAuthMiddleware', () => {
         expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login?redirect='))
     })
 
-    it('redirects to login when token is invalid', async () => {
+    it('redirects to /oauth2/login when token is invalid', async () => {
         vi.mocked(getToken).mockReturnValue('invalid-token')
         vi.mocked(validateToken).mockResolvedValue({ ok: false, error: new Error('invalid') })
         const context = createMockContext()
@@ -89,14 +89,6 @@ describe('createAuthMiddleware', () => {
         const middleware = createAuthMiddleware()
         await middleware(context as any, next)
         expect(context.locals.isSubstantial).toBe(false)
-    })
-
-    it('uses custom loginPath', async () => {
-        vi.mocked(getToken).mockReturnValue(null)
-        const context = createMockContext()
-        const middleware = createAuthMiddleware({ loginPath: '/minside/oauth2/login' })
-        await middleware(context as any, next)
-        expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/minside/oauth2/login?redirect='))
     })
 
     it('uses custom redirectUri as string', async () => {

@@ -15,8 +15,7 @@ export { sequence } from 'astro/middleware'
  * import { createAuthSequence } from '@navikt/astro-auth'
  *
  * export const onRequest = createAuthSequence(
- *     { loginPath: '/minside/oauth2/login' },
- *     async (context, next) => {
+ *     {}, *     async (context, next) => {
  *         // your app-specific middleware logic
  *         return next()
  *     },

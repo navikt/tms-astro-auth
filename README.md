@@ -22,7 +22,7 @@ Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `createAuthSequence` f
 import { createAuthSequence } from '@navikt/astro-auth'
 
 export const onRequest = createAuthSequence(
-    { loginPath: '/oauth2/login' },
+    {},
     async (context, next) => {
         // din applikasjonsspesifikke mellomvarelogikk her
         return next()
@@ -30,7 +30,7 @@ export const onRequest = createAuthSequence(
 )
 ```
 
-Autentiseringen kjøres alltid først. Appens mellomvare kjøres kun etter et gyldig token.
+Autentiseringen kjøres alltid først mot `/oauth2/login`. Appens mellomvare kjøres kun etter et gyldig token.
 
 Du kan sende inn flere mellomvare-handlers:
 
@@ -46,7 +46,7 @@ Trenger du full kontroll, kan du bruke `sequence` og `createAuthMiddleware` dire
 import { createAuthMiddleware, sequence } from '@navikt/astro-auth'
 
 export const onRequest = sequence(
-    createAuthMiddleware({ loginPath: '/minside/oauth2/login' }),
+    createAuthMiddleware(),
     async (context, next) => {
         // app-spesifikk logikk
         return next()
@@ -110,7 +110,6 @@ Returnerer en enkelt `MiddlewareHandler` for bruk med Astros `sequence()`.
 
 | Opsjon | Type | Standard | Beskrivelse |
 | --- | --- | --- | --- |
-| `loginPath` | `string` | `'/oauth2/login'` | Stien til OAuth2-innloggingsendepunktet (Wonderwall). |
 | `redirectUri` | `string \| (context) => string` | Gjeldende forespørsels-URL | URI som sendes som `redirect`-parameter etter innlogging. |
 
 ### `sequence`
