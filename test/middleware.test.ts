@@ -18,7 +18,7 @@ vi.mock('astro/middleware', () => ({
 
 import { getToken, validateToken } from '@navikt/oasis'
 import { createAuthMiddleware } from '../package/middleware'
-import { createAuthSequence } from '../package/index'
+import { sequence } from '../package/index'
 
 function createMockContext(url = 'https://app.nav.no/page') {
     const parsedUrl = new URL(url)
@@ -108,7 +108,7 @@ describe('createAuthMiddleware', () => {
     })
 })
 
-describe('createAuthSequence', () => {
+describe('sequence with createAuthMiddleware', () => {
     beforeEach(() => {
         vi.resetAllMocks()
     })
@@ -126,7 +126,7 @@ describe('createAuthSequence', () => {
             tokenSeenByApp = ctx.locals.token
             return next()
         })
-        const handler = createAuthSequence({}, appMiddleware as any)
+        const handler = sequence(createAuthMiddleware(), appMiddleware as any)
         const context = createMockContext()
 
         await handler(context as any, next)
@@ -140,7 +140,7 @@ describe('createAuthSequence', () => {
         vi.mocked(getToken).mockReturnValue(null)
 
         const appMiddleware = vi.fn()
-        const handler = createAuthSequence({}, appMiddleware as any)
+        const handler = sequence(createAuthMiddleware(), appMiddleware as any)
         const context = createMockContext()
 
         await handler(context as any, next)

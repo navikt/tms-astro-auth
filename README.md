@@ -16,13 +16,13 @@ pnpm i @navikt/astro-auth
 
 ### Steg 1: Registrer mellomvaresekvensen
 
-Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `createAuthSequence` for å kombinere autentisering med appens egen mellomvarelogikk:
+Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `sequence` for å kombinere autentisering med appens egen mellomvarelogikk:
 
 ```ts
-import { createAuthSequence } from '@navikt/astro-auth'
+import { createAuthMiddleware, sequence } from '@navikt/astro-auth'
 
-export const onRequest = createAuthSequence(
-    {},
+export const onRequest = sequence(
+    createAuthMiddleware(),
     async (context, next) => {
         // din applikasjonsspesifikke mellomvarelogikk her
         return next()
@@ -36,39 +36,17 @@ Som standard brukes gjeldende URL som `redirect`-parameter etter innlogging. Du 
 
 ```ts
 // Statisk URI — brukeren sendes alltid hit etter innlogging
-export const onRequest = createAuthSequence(
-    { redirectUri: 'https://www.nav.no/minside' },
+export const onRequest = sequence(
+    createAuthMiddleware({ redirectUri: 'https://www.nav.no/minside' }),
     async (context, next) => {
         return next()
     },
 )
 
 // Dynamisk URI — avhengig av forespørselen
-export const onRequest = createAuthSequence(
-    { redirectUri: (context) => context.url.origin },
-    async (context, next) => {
-        return next()
-    },
-)
-```
-
-Du kan sende inn flere mellomvare-handlers:
-
-```ts
-export const onRequest = createAuthSequence({}, middlewareA, middlewareB)
-```
-
-#### Manuell komposisjon med `sequence`
-
-Trenger du full kontroll, kan du bruke `sequence` og `createAuthMiddleware` direkte:
-
-```ts
-import { createAuthMiddleware, sequence } from '@navikt/astro-auth'
-
 export const onRequest = sequence(
-    createAuthMiddleware(),
+    createAuthMiddleware({ redirectUri: (context) => context.url.origin }),
     async (context, next) => {
-        // app-spesifikk logikk
         return next()
     },
 )
@@ -105,18 +83,9 @@ export function GET({ locals }: APIContext) {
 
 ## API
 
-### `createAuthSequence(options, ...middlewares)`
-
-Lager en Astro-mellomvaresekvens der auth kjøres først, etterfulgt av appens egne handlers.
-
-| Parameter | Type | Beskrivelse |
-| --- | --- | --- |
-| `options` | `AuthMiddlewareOptions` | Auth-konfigurasjonen (se under). |
-| `...middlewares` | `MiddlewareHandler[]` | Valgfrie ekstra mellomvare-handlers som kjøres etter autentisering. |
-
 ### `createAuthMiddleware(options?)`
 
-Returnerer en enkelt `MiddlewareHandler` for bruk med Astros `sequence()`.
+Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`.
 
 ### `AuthMiddlewareOptions`
 
