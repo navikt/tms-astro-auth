@@ -17,7 +17,7 @@ vi.mock('astro/middleware', () => ({
 }))
 
 import { getToken, validateToken } from '@navikt/oasis'
-import { createAuthMiddleware } from '../package/middleware'
+import { authMiddleware } from '../package/middleware'
 import { sequence } from '../package/index'
 
 function createMockContext(url = 'https://app.nav.no/page') {
@@ -32,7 +32,7 @@ function createMockContext(url = 'https://app.nav.no/page') {
 
 const next = vi.fn(() => Promise.resolve(new Response('ok')))
 
-describe('createAuthMiddleware', () => {
+describe('authMiddleware', () => {
     beforeEach(() => {
         vi.resetAllMocks()
     })
@@ -43,13 +43,13 @@ describe('createAuthMiddleware', () => {
 
     it('skips auth in local development', async () => {
         process.env.NODE_ENV = 'development'
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(createMockContext() as any, next)
         expect(next).toHaveBeenCalled()
     })
 
     it('skips auth for internal URLs', async () => {
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(createMockContext('https://app.nav.no/internal/health') as any, next)
         expect(next).toHaveBeenCalled()
     })
@@ -57,7 +57,7 @@ describe('createAuthMiddleware', () => {
     it('redirects to /oauth2/login when no token', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext()
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login?redirect='))
     })
@@ -66,7 +66,7 @@ describe('createAuthMiddleware', () => {
         vi.mocked(getToken).mockReturnValue('invalid-token')
         vi.mocked(validateToken).mockResolvedValue({ ok: false, error: new Error('invalid') })
         const context = createMockContext()
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login?redirect='))
     })
@@ -75,7 +75,7 @@ describe('createAuthMiddleware', () => {
         vi.mocked(getToken).mockReturnValue('valid-token')
         vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-substantial' } })
         const context = createMockContext()
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(context as any, next)
         expect(context.locals.token).toBe('valid-token')
         expect(next).toHaveBeenCalled()
@@ -84,7 +84,7 @@ describe('createAuthMiddleware', () => {
     it('uses custom redirectUri as string', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext()
-        const middleware = createAuthMiddleware({ redirectUri: 'https://app.nav.no' })
+        const middleware = authMiddleware({ redirectUri: 'https://app.nav.no' })
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(`/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no')}`)
     })
@@ -92,7 +92,7 @@ describe('createAuthMiddleware', () => {
     it('uses custom redirectUri as function', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext('https://app.nav.no/page?foo=bar')
-        const middleware = createAuthMiddleware({ redirectUri: (ctx) => ctx.url.origin })
+        const middleware = authMiddleware({ redirectUri: (ctx) => ctx.url.origin })
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(`/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no')}`)
     })
@@ -100,7 +100,7 @@ describe('createAuthMiddleware', () => {
     it('encodes the current URL as redirect when no redirectUri is set', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext('https://app.nav.no/page?foo=bar')
-        const middleware = createAuthMiddleware()
+        const middleware = authMiddleware()
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(
             `/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no/page?foo=bar')}`,
@@ -108,7 +108,7 @@ describe('createAuthMiddleware', () => {
     })
 })
 
-describe('sequence with createAuthMiddleware', () => {
+describe('sequence with authMiddleware', () => {
     beforeEach(() => {
         vi.resetAllMocks()
     })
@@ -126,7 +126,7 @@ describe('sequence with createAuthMiddleware', () => {
             tokenSeenByApp = ctx.locals.token
             return next()
         })
-        const handler = sequence(createAuthMiddleware(), appMiddleware as any)
+        const handler = sequence(authMiddleware(), appMiddleware as any)
         const context = createMockContext()
 
         await handler(context as any, next)
@@ -140,7 +140,7 @@ describe('sequence with createAuthMiddleware', () => {
         vi.mocked(getToken).mockReturnValue(null)
 
         const appMiddleware = vi.fn()
-        const handler = sequence(createAuthMiddleware(), appMiddleware as any)
+        const handler = sequence(authMiddleware(), appMiddleware as any)
         const context = createMockContext()
 
         await handler(context as any, next)
