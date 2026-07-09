@@ -44,7 +44,6 @@ export const createAuthMiddleware = (options: AuthMiddlewareOptions = {}): Middl
         }
 
         context.locals.token = token
-        context.locals.isSubstantial = validation.payload.acr === 'idporten-loa-substantial'
 
         return next()
     })

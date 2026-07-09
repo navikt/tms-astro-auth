@@ -2,7 +2,7 @@
 
 Astro middleware for authentication i Nav-applikasjoner via [Wonderwall/Nais](https://doc.nais.io/security/auth/wonderwall/).
 
-Den validerer JWT-tokens fra Wonderwall med [`@navikt/oasis`](https://github.com/navikt/oasis), omdirigerer til innlogging ved manglende eller ugyldig token, og setter `token` og `isSubstantial` på `context.locals` for autentiserte forespørsler.
+Den validerer JWT-tokens fra Wonderwall med [`@navikt/oasis`](https://github.com/navikt/oasis), omdirigerer til innlogging ved manglende eller ugyldig token, og setter `token` på `context.locals` for autentiserte forespørsler.
 
 ## Installasjon
 
@@ -79,7 +79,7 @@ export const onRequest = sequence(
 ```astro
 ---
 // src/pages/index.astro
-const { token, isSubstantial } = Astro.locals
+const { token } = Astro.locals
 ---
 ```
 
@@ -88,7 +88,7 @@ const { token, isSubstantial } = Astro.locals
 import type { APIContext } from 'astro'
 
 export function GET({ locals }: APIContext) {
-    const { token, isSubstantial } = locals
+    const { token } = locals
     // ...
 }
 ```
@@ -101,7 +101,7 @@ export function GET({ locals }: APIContext) {
 | URL inneholder `/internal` | Hopper over autentisering (interne Nais-endepunkter) |
 | Manglende token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
 | Ugyldig token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
-| Gyldig token | Setter `locals.token` og `locals.isSubstantial`, fortsetter |
+| Gyldig token | Setter `locals.token`, fortsetter |
 
 ## API
 
@@ -135,7 +135,6 @@ Pakken utvider `App.Locals` automatisk med følgende felter:
 | Felt | Type | Beskrivelse |
 | --- | --- | --- |
 | `token` | `string` | Rå JWT-token fra forespørselen. |
-| `isSubstantial` | `boolean` | `true` om tokenet har `idporten-loa-substantial` sikkerhetsnivå. |
 
 ## Lisens
 

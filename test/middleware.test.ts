@@ -71,24 +71,14 @@ describe('createAuthMiddleware', () => {
         expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login?redirect='))
     })
 
-    it('sets token and isSubstantial=true on valid substantial token', async () => {
+    it('sets token on valid token', async () => {
         vi.mocked(getToken).mockReturnValue('valid-token')
         vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-substantial' } })
         const context = createMockContext()
         const middleware = createAuthMiddleware()
         await middleware(context as any, next)
         expect(context.locals.token).toBe('valid-token')
-        expect(context.locals.isSubstantial).toBe(true)
         expect(next).toHaveBeenCalled()
-    })
-
-    it('sets isSubstantial=false for non-substantial acr', async () => {
-        vi.mocked(getToken).mockReturnValue('valid-token')
-        vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-high' } })
-        const context = createMockContext()
-        const middleware = createAuthMiddleware()
-        await middleware(context as any, next)
-        expect(context.locals.isSubstantial).toBe(false)
     })
 
     it('uses custom redirectUri as string', async () => {
@@ -132,10 +122,8 @@ describe('createAuthSequence', () => {
         vi.mocked(validateToken).mockResolvedValue({ ok: true, payload: { acr: 'idporten-loa-substantial' } })
 
         let tokenSeenByApp: unknown
-        let isSubstantialSeenByApp: unknown
         const appMiddleware = vi.fn((ctx: typeof context, next: () => Promise<Response>) => {
             tokenSeenByApp = ctx.locals.token
-            isSubstantialSeenByApp = ctx.locals.isSubstantial
             return next()
         })
         const handler = createAuthSequence({}, appMiddleware as any)
@@ -144,7 +132,6 @@ describe('createAuthSequence', () => {
         await handler(context as any, next)
 
         expect(tokenSeenByApp).toBe('valid-token')
-        expect(isSubstantialSeenByApp).toBe(true)
         expect(appMiddleware).toHaveBeenCalled()
         expect(next).toHaveBeenCalled()
     })
