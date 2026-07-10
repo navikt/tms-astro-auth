@@ -2,7 +2,7 @@ import { getToken, validateToken } from '@navikt/oasis'
 import { defineMiddleware } from 'astro/middleware'
 import type { MiddlewareHandler } from 'astro'
 
-export interface AuthMiddlewareOptions {
+export interface Options {
     /**
      * The URI to redirect back to after successful login.
      * Defaults to the current request URL (href).
@@ -13,7 +13,7 @@ export interface AuthMiddlewareOptions {
     redirectUri?: string | ((context: Parameters<MiddlewareHandler>[0]) => string)
 }
 
-export const authenticate = (options: AuthMiddlewareOptions = {}): MiddlewareHandler => {
+export const authenticate = (options: Options = {}): MiddlewareHandler => {
     return defineMiddleware(async (context, next) => {
         if (process.env.NODE_ENV === 'development') {
             return next()

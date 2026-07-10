@@ -87,7 +87,7 @@ export function GET({ locals }: APIContext) {
 
 Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`.
 
-### `AuthMiddlewareOptions`
+### `Options`
 
 | Opsjon | Type | Standard | Beskrivelse |
 | --- | --- | --- | --- |
