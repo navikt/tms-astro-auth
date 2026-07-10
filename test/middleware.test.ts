@@ -18,7 +18,7 @@ vi.mock('astro/middleware', () => ({
 
 import { getToken, validateToken } from '@navikt/oasis'
 import { authenticate } from '../package/middleware'
-import { sequence } from '../package/index'
+import { sequence } from 'astro/middleware'
 
 function createMockContext(url = 'https://app.nav.no/page') {
     const parsedUrl = new URL(url)

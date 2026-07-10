@@ -1,5 +1,4 @@
 export { authenticate, type Options } from './middleware'
-export { sequence } from 'astro/middleware'
 
 /**
  * Extend `App.Locals` with the auth fields set by the middleware so that
