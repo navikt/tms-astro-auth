@@ -26,6 +26,7 @@ function createMockContext(url = 'https://app.nav.no/page') {
         request: new Request(url),
         url: parsedUrl,
         locals: {} as Record<string, unknown>,
+        logger: { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() },
         redirect: vi.fn((redirectUrl: string) => new Response(null, { status: 302, headers: { Location: redirectUrl } })),
     }
 }

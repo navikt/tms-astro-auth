@@ -39,7 +39,7 @@ export const authenticate = (options: Options = {}): MiddlewareHandler => {
         const validation = await validateToken(token)
 
         if (!validation.ok) {
-            console.info('Validation of token failed. Redirecting to login')
+            context.logger.info('Validation of token failed. Redirecting to login')
             return context.redirect(loginUrl)
         }
 
