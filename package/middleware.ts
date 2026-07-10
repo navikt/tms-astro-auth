@@ -13,7 +13,7 @@ export interface AuthMiddlewareOptions {
     redirectUri?: string | ((context: Parameters<MiddlewareHandler>[0]) => string)
 }
 
-export const authMiddleware = (options: AuthMiddlewareOptions = {}): MiddlewareHandler => {
+export const authenticate = (options: AuthMiddlewareOptions = {}): MiddlewareHandler => {
     return defineMiddleware(async (context, next) => {
         if (process.env.NODE_ENV === 'development') {
             return next()

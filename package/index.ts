@@ -1,4 +1,4 @@
-export { authMiddleware, type AuthMiddlewareOptions } from './middleware'
+export { authenticate, type AuthMiddlewareOptions } from './middleware'
 export { sequence } from 'astro/middleware'
 
 /**

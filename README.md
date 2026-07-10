@@ -19,10 +19,10 @@ pnpm i @navikt/astro-auth
 Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `sequence` for å kombinere autentisering med appens egen mellomvarelogikk:
 
 ```ts
-import { authMiddleware, sequence } from '@navikt/astro-auth'
+import { authenticate, sequence } from '@navikt/astro-auth'
 
 export const onRequest = sequence(
-    authMiddleware(),
+    authenticate(),
     async (context, next) => {
         // din applikasjonsspesifikke mellomvarelogikk her
         return next()
@@ -37,7 +37,7 @@ Som standard brukes gjeldende URL som `redirect`-parameter etter innlogging. Du 
 ```ts
 // Statisk URI — brukeren sendes alltid hit etter innlogging
 export const onRequest = sequence(
-    authMiddleware({ redirectUri: 'https://www.nav.no/minside' }),
+    authenticate({ redirectUri: 'https://www.nav.no/minside' }),
     async (context, next) => {
         return next()
     },
@@ -45,7 +45,7 @@ export const onRequest = sequence(
 
 // Dynamisk URI — avhengig av forespørselen
 export const onRequest = sequence(
-    authMiddleware({ redirectUri: (context) => context.url.origin }),
+    authenticate({ redirectUri: (context) => context.url.origin }),
     async (context, next) => {
         return next()
     },
@@ -83,7 +83,7 @@ export function GET({ locals }: APIContext) {
 
 ## API
 
-### `authMiddleware(options?)`
+### `authenticate(options?)`
 
 Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`.
 
