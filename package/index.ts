@@ -1,4 +1,4 @@
-export { authenticate, type Options } from './middleware'
+export { authenticate } from './middleware'
 
 /**
  * Extend `App.Locals` with the auth fields set by the middleware so that

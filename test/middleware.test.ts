@@ -82,30 +82,22 @@ describe('authenticate', () => {
         expect(next).toHaveBeenCalled()
     })
 
-    it('uses custom redirectUri as string', async () => {
-        vi.mocked(getToken).mockReturnValue(null)
-        const context = createMockContext()
-        const middleware = authenticate({ redirectUri: 'https://app.nav.no' })
-        await middleware(context as any, next)
-        expect(context.redirect).toHaveBeenCalledWith(`/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no')}`)
-    })
-
-    it('uses custom redirectUri as function', async () => {
-        vi.mocked(getToken).mockReturnValue(null)
-        const context = createMockContext('https://app.nav.no/page?foo=bar')
-        const middleware = authenticate({ redirectUri: (ctx) => ctx.url.origin })
-        await middleware(context as any, next)
-        expect(context.redirect).toHaveBeenCalledWith(`/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no')}`)
-    })
-
-    it('encodes the current URL as redirect when no redirectUri is set', async () => {
+    it('redirects to /oauth2/login with pathname and query params when no token', async () => {
         vi.mocked(getToken).mockReturnValue(null)
         const context = createMockContext('https://app.nav.no/page?foo=bar')
         const middleware = authenticate()
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith(
-            `/oauth2/login?redirect=${encodeURIComponent('https://app.nav.no/page?foo=bar')}`,
+            `/oauth2/login?redirect=/page${encodeURIComponent('?foo=bar')}`,
         )
+    })
+
+    it('redirects to /oauth2/login with only pathname when no query params', async () => {
+        vi.mocked(getToken).mockReturnValue(null)
+        const context = createMockContext('https://app.nav.no/page')
+        const middleware = authenticate()
+        await middleware(context as any, next)
+        expect(context.redirect).toHaveBeenCalledWith('/oauth2/login?redirect=/page')
     })
 })
 

@@ -31,27 +31,7 @@ export const onRequest = sequence(
 )
 ```
 
-Autentiseringen kjøres alltid først mot `/oauth2/login`. Appens mellomvare kjøres kun etter et gyldig token.
-
-Som standard brukes gjeldende URL som `redirect`-parameter etter innlogging. Du kan overstyre dette med `redirectUri`:
-
-```ts
-// Statisk URI — brukeren sendes alltid hit etter innlogging
-export const onRequest = sequence(
-    authenticate({ redirectUri: 'https://www.nav.no/minside' }),
-    async (context, next) => {
-        return next()
-    },
-)
-
-// Dynamisk URI — avhengig av forespørselen
-export const onRequest = sequence(
-    authenticate({ redirectUri: (context) => context.url.origin }),
-    async (context, next) => {
-        return next()
-    },
-)
-```
+Autentiseringen kjøres alltid først mot `/oauth2/login`. Redirect-parameteren settes automatisk til gjeldende pathname + query params (f.eks. `/minside?foo=bar`). Appens mellomvare kjøres kun etter et gyldig token.
 
 ### Steg 2: Bruk token i komponenter og endepunkter
 
@@ -84,15 +64,9 @@ export function GET({ locals }: APIContext) {
 
 ## API
 
-### `authenticate(options?)`
+### `authenticate()`
 
-Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`.
-
-### `Options`
-
-| Opsjon | Type | Standard | Beskrivelse |
-| --- | --- | --- | --- |
-| `redirectUri` | `string \| (context) => string` | Gjeldende forespørsels-URL | URI som sendes som `redirect`-parameter etter innlogging. |
+Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`. Omdirigerer til `/oauth2/login?redirect=<pathname><search>` ved manglende eller ugyldig token.
 
 ### `App.Locals`
 

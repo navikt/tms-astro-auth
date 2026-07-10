@@ -2,18 +2,7 @@ import { getToken, validateToken } from '@navikt/oasis'
 import { defineMiddleware } from 'astro/middleware'
 import type { MiddlewareHandler } from 'astro'
 
-export interface Options {
-    /**
-     * The URI to redirect back to after successful login.
-     * Defaults to the current request URL (href).
-     *
-     * Can be a static string or a function that receives the middleware context
-     * and returns a string — useful when the redirect target depends on the request.
-     */
-    redirectUri?: string | ((context: Parameters<MiddlewareHandler>[0]) => string)
-}
-
-export const authenticate = (options: Options = {}): MiddlewareHandler => {
+export const authenticate = (): MiddlewareHandler => {
     return defineMiddleware(async (context, next) => {
         if (process.env.NODE_ENV === 'development') {
             return next()
@@ -24,13 +13,8 @@ export const authenticate = (options: Options = {}): MiddlewareHandler => {
         }
 
         const token = getToken(context.request.headers)
-
-        const redirectUri =
-            typeof options.redirectUri === 'function'
-                ? options.redirectUri(context)
-                : options.redirectUri ?? context.url.href
-
-        const loginUrl = `/oauth2/login?redirect=${encodeURIComponent(redirectUri)}`
+        const params = encodeURIComponent(context.url.search)
+        const loginUrl = `/oauth2/login?redirect=${context.url.pathname}${params}`
 
         if (!token) {
             return context.redirect(loginUrl)
