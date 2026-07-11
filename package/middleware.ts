@@ -13,8 +13,7 @@ export const authenticate = (): MiddlewareHandler => {
         }
 
         const token = getToken(context.request.headers)
-        const params = encodeURIComponent(context.url.search)
-        const loginUrl = `/oauth2/login?redirect=${context.url.pathname}${params}`
+        const loginUrl = `/oauth2/login?redirect=${context.url.pathname}${encodeURIComponent(context.url.search)}`
 
         if (!token) {
             return context.redirect(loginUrl)
