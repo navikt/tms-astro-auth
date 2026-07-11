@@ -14,9 +14,17 @@ pnpm i @navikt/astro-auth
 
 ## Bruk
 
-### Steg 1: Registrer mellomvaresekvensen
+### Steg 1: Registrer mellomvaren
 
-Opprett `src/middleware.ts` i Astro-prosjektet ditt. Bruk `sequence` for å kombinere autentisering med appens egen mellomvarelogikk:
+Opprett `src/middleware.ts` i Astro-prosjektet ditt:
+
+```ts
+import { authenticate } from '@navikt/astro-auth'
+
+export const onRequest = authenticate()
+```
+
+Trenger du egen mellomvarelogikk i tillegg, bruk `sequence` fra Astro:
 
 ```ts
 import { authenticate } from '@navikt/astro-auth'
