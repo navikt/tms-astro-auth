@@ -1,6 +1,6 @@
 {
     "name": "@navikt/astro-auth",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "license": "MIT",
     "type": "module",
     "packageManager": "pnpm@10.33.0",
