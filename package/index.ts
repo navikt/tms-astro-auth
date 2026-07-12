@@ -9,7 +9,6 @@ export { authenticate } from './middleware'
 declare global {
     namespace App {
         interface Locals {
-            /** The raw JWT token extracted from the incoming request. */
             token: string
         }
     }
