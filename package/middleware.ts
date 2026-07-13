@@ -15,6 +15,8 @@ export const authenticate = (): MiddlewareHandler => {
         const token = getToken(context.request.headers)
         const loginUrl = `/oauth2/login?redirect=${context.url.pathname}${encodeURIComponent(context.url.search)}`
 
+        context.logger.info(`Authenticating request to ${context.url.pathname}${context.url.search}`)
+
         if (!token) {
             return context.redirect(loginUrl)
         }
