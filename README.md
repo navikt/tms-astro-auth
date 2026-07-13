@@ -39,7 +39,7 @@ export const onRequest = sequence(
 )
 ```
 
-Autentiseringen kjøres alltid først mot `/oauth2/login`. Redirect-parameteren settes automatisk til gjeldende pathname + query params (f.eks. `/minside?foo=bar`). Appens mellomvare kjøres kun etter et gyldig token.
+Autentiseringen kjøres alltid først mot `/oauth2/login`. Redirect-parameteren settes automatisk til gjeldende pathname + query params (f.eks. `/minside?foo=bar`). Har appen en `base`-konfigurasjon i `astro.config`, inkluderes denne i login-URL-en (f.eks. `/minside/oauth2/login?redirect=...`). Appens mellomvare kjøres kun etter et gyldig token.
 
 ### Steg 2: Bruk token i komponenter og endepunkter
 
@@ -74,7 +74,7 @@ export function GET({ locals }: APIContext) {
 
 ### `authenticate()`
 
-Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`. Omdirigerer til `/oauth2/login?redirect=<pathname><search>` ved manglende eller ugyldig token.
+Returnerer en `MiddlewareHandler` som validerer tokenet og setter `locals.token`. Omdirigerer til `<BASE_URL>/oauth2/login?redirect=<pathname><search>` ved manglende eller ugyldig token. `BASE_URL` hentes fra `import.meta.env.BASE_URL` (satt av Astros `base`-konfigurasjon).
 
 ### `App.Locals`
 

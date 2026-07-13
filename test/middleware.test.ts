@@ -20,6 +20,9 @@ import { getToken, validateToken } from '@navikt/oasis'
 import { authenticate } from '../package/middleware'
 import { sequence } from 'astro/middleware'
 
+// Default BASE_URL to '/' (same as Astro default)
+import.meta.env.BASE_URL = '/'
+
 function createMockContext(url = 'https://app.nav.no/page') {
     const parsedUrl = new URL(url)
     return {
@@ -98,6 +101,18 @@ describe('authenticate', () => {
         const middleware = authenticate()
         await middleware(context as any, next)
         expect(context.redirect).toHaveBeenCalledWith('/oauth2/login?redirect=/page')
+    })
+
+    it('includes BASE_URL in the login redirect', async () => {
+        import.meta.env.BASE_URL = '/minside/'
+        vi.mocked(getToken).mockReturnValue(null)
+        const context = createMockContext('https://app.nav.no/minside/page?a=1')
+        const middleware = authenticate()
+        await middleware(context as any, next)
+        expect(context.redirect).toHaveBeenCalledWith(
+            `/minside/oauth2/login?redirect=/minside/page${encodeURIComponent('?a=1')}`,
+        )
+        import.meta.env.BASE_URL = '/'
     })
 })
 
