@@ -28,6 +28,7 @@ export const authenticate = (): MiddlewareHandler => {
         }
 
         context.locals.token = token
+        context.locals.validation = validation
 
         return next()
     })
