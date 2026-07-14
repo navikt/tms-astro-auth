@@ -52,10 +52,26 @@ describe('authenticate', () => {
         expect(next).toHaveBeenCalled()
     })
 
-    it('skips auth for internal URLs', async () => {
+    it('skips auth for internal Nais probe endpoints', async () => {
         const middleware = authenticate()
-        await middleware(createMockContext('https://app.nav.no/internal/health') as any, next)
+        await middleware(createMockContext('https://app.nav.no/minside/utkast/api/internal/isAlive') as any, next)
         expect(next).toHaveBeenCalled()
+    })
+
+    it('does not skip auth when /internal appears only in the query string', async () => {
+        vi.mocked(getToken).mockReturnValue(null)
+        const context = createMockContext('https://app.nav.no/dashboard?x=/internal')
+        const middleware = authenticate()
+        await middleware(context as any, next)
+        expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login'))
+    })
+
+    it('does not skip auth for lookalike paths like /internalized', async () => {
+        vi.mocked(getToken).mockReturnValue(null)
+        const context = createMockContext('https://app.nav.no/internalized')
+        const middleware = authenticate()
+        await middleware(context as any, next)
+        expect(context.redirect).toHaveBeenCalledWith(expect.stringContaining('/oauth2/login'))
     })
 
     it('redirects to /oauth2/login when no token', async () => {

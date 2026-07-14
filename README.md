@@ -65,7 +65,7 @@ export function GET({ locals }: APIContext) {
 | Forespørsel | Resultat |
 | --- | --- |
 | `NODE_ENV === 'development'` | Hopper over autentisering (lokal utvikling) |
-| URL inneholder `/internal` | Hopper over autentisering (interne Nais-endepunkter) |
+| URL inneholder `/internal/` | Hopper over autentisering (interne Nais-endepunkter, f.eks. `isAlive`/`isReady`) |
 | Manglende token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
 | Ugyldig token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
 | Gyldig token | Setter `locals.token`, fortsetter |

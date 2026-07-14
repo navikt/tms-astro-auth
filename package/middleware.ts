@@ -8,7 +8,7 @@ export const authenticate = (): MiddlewareHandler => {
             return next()
         }
 
-        if (context.request.url.includes('/internal')) {
+        if (context.url.pathname.includes('/internal/')) {
             return next()
         }
 
