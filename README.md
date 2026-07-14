@@ -68,7 +68,7 @@ export function GET({ locals }: APIContext) {
 | URL inneholder `/internal/` | Hopper over autentisering (interne Nais-endepunkter) |
 | Manglende token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
 | Ugyldig token | Omdirigerer til `/oauth2/login?redirect=<redirectUri>` |
-| Gyldig token | Setter `locals.token`, fortsetter |
+| Gyldig token | Setter `locals.token` og `locals.validation`, fortsetter |
 
 ## API
 
@@ -83,6 +83,7 @@ Pakken utvider `App.Locals` automatisk med følgende felter:
 | Felt | Type | Beskrivelse |
 | --- | --- | --- |
 | `token` | `string` | Rå JWT-token fra forespørselen. |
+| `validation` | `ValidationResult` | Resultatet fra `@navikt/oasis` sin `validateToken`. Ved `validation.ok === true` er det parsede `payload` tilgjengelig. |
 
 ## Lisens
 
