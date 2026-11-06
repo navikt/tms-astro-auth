@@ -14,7 +14,7 @@ jobs:
       contents: read
       pull-requests: write
     name: Dependabot Auto-merge
-    uses: navikt/tms-deploy/.github/workflows/dependabot-automerge.yaml@main
+    uses: navikt/tms-deploy/.github/workflows/dependabot-automerge.yaml@f78b307c3075ea8676420539c62a65c1ba7d5664 # main
     secrets:
       APP_ID: ${{ vars.APP_CLIENT_ID }}
       PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
